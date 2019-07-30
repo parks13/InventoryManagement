@@ -48,7 +48,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Prototype 버전이므로 주요 기능은 작동되지 않습니다. 
+        <string>계발 중인 Prototype 입니다. 
  소스코드: https://github.com/parks13/InventoryManagement</string>
        </property>
        <property name="alignment">
@@ -232,8 +232,8 @@
       <widget class="QPushButton" name="deleteItemButton">
        <property name="geometry">
         <rect>
-         <x>610</x>
-         <y>320</y>
+         <x>770</x>
+         <y>230</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -448,8 +448,8 @@
       <widget class="QPushButton" name="setNewQuantityButton">
        <property name="geometry">
         <rect>
-         <x>530</x>
-         <y>280</y>
+         <x>610</x>
+         <y>190</y>
          <width>241</width>
          <height>31</height>
         </rect>
