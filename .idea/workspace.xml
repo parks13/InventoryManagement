@@ -18,6 +18,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+<<<<<<< HEAD
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-116" />
     <option name="y" value="-21" />
@@ -25,10 +26,14 @@
     <option name="height" value="1028" />
   </component>
   <component name="ProjectId" id="1OkvtU6czNk6YDa7H6EnpUXsoZu" />
+=======
+  <component name="ProjectId" id="1OkcMJtlskkEK3NJ8UIZKF8vMTJ" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+>>>>>>> parent of eaf59d2... Revert "Working on CSV to QTableWidget"
   <component name="PropertiesComponent">
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -50,9 +55,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\Jason\AppData\Local\Programs\Python\Python37\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/source.py" />
@@ -88,7 +93,13 @@
       <map>
         <entry key="MAIN">
           <value>
+<<<<<<< HEAD
             <State />
+=======
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+>>>>>>> parent of eaf59d2... Revert "Working on CSV to QTableWidget"
           </value>
         </entry>
       </map>
