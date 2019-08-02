@@ -6,7 +6,7 @@ from PyQt5.QtGui import QTextCharFormat, QTextFormat, QTextObjectInterface
 from PyQt5.QtCore import QFile, QIODevice, QObject, QSizeF
 
 # Load the UI file
-UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
+UIClass, QtBaseClass = uic.loadUiType(".files\\InvScreen.ui")
 
 # Class to handle the GUI of the program
 class InvGUI(UIClass, QtBaseClass):
@@ -21,11 +21,13 @@ class InvGUI(UIClass, QtBaseClass):
 
         # Show open file page and let the user open csv file and proceed to next page
         self.stackedWidget.setCurrentIndex(0)
-        self.openFileButton.clicked.connect(self.openFile)
+        self.openFileButton.clicked.connect(self.OpenFile)
 
+        # Connect cellClicked event to a function displaying its related values
+        self.tableWidget.cellClicked.connect(self.ClickedCell)
 
     # Opens a single .csv file
-    def openFile(self):
+    def OpenFile(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         filePath = QFileDialog.getOpenFileName(self, 'Open File', '', 'CSV(*.csv)', options=options)
@@ -36,7 +38,7 @@ class InvGUI(UIClass, QtBaseClass):
                 # parse the csv file
                 with open(filePath[0], newline='') as csvFile:
                     self.tableWidget.setRowCount(0)
-                    self.tableWidget.setColumnCount(3)
+                    self.tableWidget.setColumnCount(2)
                     file = csv.reader(csvFile, delimiter=',', quotechar='|')
 
                     for rowData in file:
@@ -51,12 +53,28 @@ class InvGUI(UIClass, QtBaseClass):
                 self.stackedWidget.setCurrentIndex(1)
 
             except:
-                # If file is not open, display message and stay on same page
+                # If file is not loaded, display message
                 warningMsg = QMessageBox()
                 warningMsg.setIcon(QMessageBox.Warning)
                 warningMsg.setWindowTitle('ERROR')
                 warningMsg.setText('Error loading file')
                 warningMsg.exec_()
+
+    # Displays data of the clicked row
+    def ClickedCell(self, row, column):
+        tmp = self.tableWidget.itemAt(row, column)
+
+        # if tmp != '':
+        #     # Check if selected value is item name or item quantity
+        #     if not tmp.isnumeric():
+        #         self.itemName.setText(tmp.text())
+        #         tmp = self.tableWidget.itemAt(row, column+1)
+        #         self.itemQuantity.setText(tmp.text())
+        # 
+        #     else:
+        #         self.itemQuantity.setText(tmp.text())
+        #         tmp = self.tableWidget.itemAt(row, column - 1)
+        #         self.itemName.setText(tmp.text())
 
 
 app = QtWidgets.QApplication(sys.argv)

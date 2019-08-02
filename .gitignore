@@ -45,3 +45,5 @@ CMakeLists.txt.user*
 # Folders
 idea/
 venv/
+*.pyc
+*.exe
