@@ -47,3 +47,4 @@ idea/
 venv/
 *.pyc
 *.exe
+*.csv
