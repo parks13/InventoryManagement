@@ -6,7 +6,7 @@ from PyQt5.QtGui import QTextCharFormat, QTextFormat, QTextObjectInterface
 from PyQt5.QtCore import QFile, QIODevice, QObject, QSizeF
 
 # Load the UI file
-UIClass, QtBaseClass = uic.loadUiType(".files\\InvScreen.ui")
+UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
 
 # Class to handle the GUI of the program
 class InvGUI(UIClass, QtBaseClass):
@@ -61,20 +61,15 @@ class InvGUI(UIClass, QtBaseClass):
                 warningMsg.exec_()
 
     # Displays data of the clicked row
-    def ClickedCell(self, row, column):
-        tmp = self.tableWidget.itemAt(row, column)
+    def ClickedCell(self, row, col):
+        print("Selected cell is: ", row, col)
+        name = self.tableWidget.item(row, 0).text()
+        quantity = self.tableWidget.item(row, 1).text()
 
-        # if tmp != '':
-        #     # Check if selected value is item name or item quantity
-        #     if not tmp.isnumeric():
-        #         self.itemName.setText(tmp.text())
-        #         tmp = self.tableWidget.itemAt(row, column+1)
-        #         self.itemQuantity.setText(tmp.text())
-        # 
-        #     else:
-        #         self.itemQuantity.setText(tmp.text())
-        #         tmp = self.tableWidget.itemAt(row, column - 1)
-        #         self.itemName.setText(tmp.text())
+        print("The content of the cell is: ", name, quantity)
+
+        self.itemName.setText(name)
+        self.itemQuantity.setText(quantity)
 
 
 app = QtWidgets.QApplication(sys.argv)

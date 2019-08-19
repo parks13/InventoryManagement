@@ -17,7 +17,7 @@
    <item row="0" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page">
       <widget class="QPushButton" name="openFileButton">
@@ -68,7 +68,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>Logo TexWin S,A.png</pixmap>
+        <pixmap>logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
