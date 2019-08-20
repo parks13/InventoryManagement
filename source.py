@@ -3,7 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QTextEdit, \
     QVBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QTextCharFormat, QTextFormat, QTextObjectInterface
-from PyQt5.QtCore import QFile, QIODevice, QObject, QSizeF
+from PyQt5.QtCore import QFile, QIODevice, QObject, QSize
 
 # Load the UI file
 UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
@@ -18,6 +18,8 @@ class InvGUI(UIClass, QtBaseClass):
         self.setWindowTitle('Inventory Management Program')  # set the title of the program window
         self.setWindowFlag(QtCore.Qt.WindowMinMaxButtonsHint, False)  # disable windows maximize button
 #       self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)  # disable windows exit button
+        self.setFixedSize(752, 401)  # fix the windows size
+
 
         # Show open file page and let the user open csv file and proceed to next page
         self.stackedWidget.setCurrentIndex(0)
@@ -25,6 +27,9 @@ class InvGUI(UIClass, QtBaseClass):
 
         # Connect cellClicked event to a function displaying its related values
         self.tableWidget.cellClicked.connect(self.ClickedCell)
+
+        # Connect search button to search item name in QTableWidget
+        self.searchButton.clicked.connect(self.Search)
 
     # Opens a single .csv file
     def OpenFile(self):
@@ -63,13 +68,22 @@ class InvGUI(UIClass, QtBaseClass):
     # Displays data of the clicked row
     def ClickedCell(self, row, col):
         print("Selected cell is: ", row, col)
-        name = self.tableWidget.item(row, 0).text()
-        quantity = self.tableWidget.item(row, 1).text()
+        self.itemName.setText(self.tableWidget.item(row, 0).text())
+        self.itemQuantity.setText(self.tableWidget.item(row, 1).text())
 
-        print("The content of the cell is: ", name, quantity)
+    # Search and display corresponding content
+    def Search(self):
+        itemName = self.searchObj.text()
+        print("Searching: ", itemName)
 
-        self.itemName.setText(name)
-        self.itemQuantity.setText(quantity)
+        items = self.tableWidget.findItems(itemName, QtCore.Qt.MatchExactly)
+        if items:
+            results = '\n'.join(
+                'row %d column %d' % (item.row() + 1, item.column() + 1)
+                for item in items)
+        else:
+            results = 'Found Nothing'
+        QMessageBox.information(self, 'Search Results', results)
 
 
 app = QtWidgets.QApplication(sys.argv)
