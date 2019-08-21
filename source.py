@@ -17,9 +17,7 @@ class InvGUI(UIClass, QtBaseClass):
         self.setupUi(self)
         self.setWindowTitle('Inventory Management Program')  # set the title of the program window
         self.setWindowFlag(QtCore.Qt.WindowMinMaxButtonsHint, False)  # disable windows maximize button
-#       self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)  # disable windows exit button
         self.setFixedSize(752, 401)  # fix the windows size
-
 
         # Show open file page and let the user open csv file and proceed to next page
         self.stackedWidget.setCurrentIndex(0)
@@ -76,14 +74,20 @@ class InvGUI(UIClass, QtBaseClass):
         itemName = self.searchObj.text()
         print("Searching: ", itemName)
 
-        items = self.tableWidget.findItems(itemName, QtCore.Qt.MatchExactly)
+        # Searching for the item, with case insensitive format
+        items = self.tableWidget.findItems(itemName, QtCore.Qt.MatchFixedString)
         if items:
-            results = '\n'.join(
-                'row %d column %d' % (item.row() + 1, item.column() + 1)
-                for item in items)
+            for item in items:
+                row = item.row()
+                # When found, display the results
+                self.itemName.setText(self.tableWidget.item(row, 0).text())
+                self.itemQuantity.setText(self.tableWidget.item(row, 1).text())
+                self.tableWidget.selectRow(row)
+
         else:
-            results = 'Found Nothing'
-        QMessageBox.information(self, 'Search Results', results)
+            # When not found, display error message
+            results = '존재하지 않는 품목입니다.'
+            QMessageBox.information(self, 'Search Results', results)
 
 
 app = QtWidgets.QApplication(sys.argv)
