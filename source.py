@@ -10,6 +10,10 @@ UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
 
 # Class to handle the GUI of the program
 class InvGUI(UIClass, QtBaseClass):
+    # default class variables
+    filePath = ""
+    row = 0
+
     # Constructs the GUI
     def __init__(self):
         UIClass.__init__(self)
@@ -29,17 +33,20 @@ class InvGUI(UIClass, QtBaseClass):
         # Connect search button to search item name in QTableWidget
         self.searchButton.clicked.connect(self.Search)
 
+        # Connect save button to save new quantity of the item
+        self.setNewQuantityButton.clicked.connect(self.SaveNewQuantity)
+
     # Opens a single .csv file
     def OpenFile(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        filePath = QFileDialog.getOpenFileName(self, 'Open File', '', 'CSV(*.csv)', options=options)
+        InvGUI.filePath = QFileDialog.getOpenFileName(self, 'Open File', '', 'CSV(*.csv)', options=options)
 
         # If file is opened successfully, parse the data into the QTableView
-        if filePath[0] != '':
+        if InvGUI.filePath[0] != '':
             try:
                 # parse the csv file
-                with open(filePath[0], newline='') as csvFile:
+                with open(InvGUI.filePath[0], newline='') as csvFile:
                     self.tableWidget.setRowCount(0)
                     self.tableWidget.setColumnCount(2)
                     file = csv.reader(csvFile, delimiter=',', quotechar='|')
@@ -60,14 +67,16 @@ class InvGUI(UIClass, QtBaseClass):
                 warningMsg = QMessageBox()
                 warningMsg.setIcon(QMessageBox.Warning)
                 warningMsg.setWindowTitle('ERROR')
-                warningMsg.setText('Error loading file')
+                warningMsg.setText('파일을 불러오지 못하였습니다.')
                 warningMsg.exec_()
 
     # Displays data of the clicked row
     def ClickedCell(self, row, col):
-        print("Selected cell is: ", row, col)
         self.itemName.setText(self.tableWidget.item(row, 0).text())
         self.itemQuantity.setText(self.tableWidget.item(row, 1).text())
+        InvGUI.row = row
+        print("Row selected: ", InvGUI.row + 1)
+        print("Column selected: ", col + 1)
 
     # Search and display corresponding content
     def Search(self):
@@ -78,17 +87,45 @@ class InvGUI(UIClass, QtBaseClass):
         items = self.tableWidget.findItems(itemName, QtCore.Qt.MatchFixedString)
         if items:
             for item in items:
-                row = item.row()
+                InvGUI.row = item.row()
                 # When found, display the results
-                self.itemName.setText(self.tableWidget.item(row, 0).text())
-                self.itemQuantity.setText(self.tableWidget.item(row, 1).text())
-                self.tableWidget.selectRow(row)
+                self.itemName.setText(self.tableWidget.item(InvGUI.row, 0).text())
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                self.tableWidget.selectRow(InvGUI.row)  # highlight corresponding row
+                print("Row selected: ", InvGUI.row + 1)
 
         else:
             # When not found, display error message
             results = '존재하지 않는 품목입니다.'
             QMessageBox.information(self, 'Search Results', results)
 
+    # Changes the quantity of the item selected
+    def SaveNewQuantity(self):
+        oldQty = int(self.tableWidget.item(InvGUI.row, 1).text())
+        print("Old Quantity: ", oldQty)
+
+        tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
+        newQuantity = QTableWidgetItem(str(tmp))
+        print("New Quantity: ", tmp)
+
+        try: ### TEST HERE
+            # Save to the same csv file by opening it again
+            with open(InvGUI.filePath[0], newline='', mode='w') as csvFile:
+                writer = csv.writer(csvFile)
+                for row in range(self.table.rowCount()):
+                    rowdata = []
+                    for column in range(self.table.columnCount()):
+                        item = self.table.item(row, column)
+                        if item is not None:
+                            rowdata.append(item.text()).encode('utf8')
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+                self.itemQuantity.setText(newQuantity)
+                self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+        except:
+            ""
 
 app = QtWidgets.QApplication(sys.argv)
 window = InvGUI()
