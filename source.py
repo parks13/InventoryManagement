@@ -34,7 +34,7 @@ class InvGUI(UIClass, QtBaseClass):
         self.searchButton.clicked.connect(self.Search)
 
         # Connect save button to save new quantity of the item
-        self.setNewQuantityButton.clicked.connect(self.SaveNewQuantity)
+        self.setNewQuantityButton.clicked.connect(self.ChangeQuantity)
 
     # Opens a single .csv file
     def OpenFile(self):
@@ -100,32 +100,54 @@ class InvGUI(UIClass, QtBaseClass):
             QMessageBox.information(self, 'Search Results', results)
 
     # Changes the quantity of the item selected
-    def SaveNewQuantity(self):
-        oldQty = int(self.tableWidget.item(InvGUI.row, 1).text())
-        print("Old Quantity: ", oldQty)
+    def ChangeQuantity(self):
+        # Prompt user with confirmation box before saving
+        confirmSave = QMessageBox.question(self, 'Confirmation', "변경 사항을 저장 하시겠습니다?",
+                                           QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
-        tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
-        newQuantity = QTableWidgetItem(str(tmp))
-        print("New Quantity: ", tmp)
+        if confirmSave == QMessageBox.Yes:
+            oldQty = int(self.tableWidget.item(InvGUI.row, 1).text())
+            print("Old Quantity: ", oldQty)
 
-        try: ### TEST HERE
-            # Save to the same csv file by opening it again
-            with open(InvGUI.filePath[0], newline='', mode='w') as csvFile:
-                writer = csv.writer(csvFile)
-                for row in range(self.table.rowCount()):
-                    rowdata = []
-                    for column in range(self.table.columnCount()):
-                        item = self.table.item(row, column)
-                        if item is not None:
-                            rowdata.append(item.text()).encode('utf8')
-                        else:
-                            rowdata.append('')
-                    writer.writerow(rowdata)
+            tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
+            newQuantity = QTableWidgetItem(str(tmp))
+            print("New Quantity: ", tmp)
 
-                self.itemQuantity.setText(newQuantity)
-                self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
-        except:
-            ""
+            try:  ### TEST HERE
+                # Save to the same csv file by opening it again
+                with open(InvGUI.filePath[0], newline='', mode='w') as csvFile:
+                    self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+                    writer = csv.writer(csvFile)
+                    for row in range(self.tableWidget.rowCount()):
+                        rowdata = []
+                        for column in range(self.tableWidget.columnCount()):
+                            item = self.tableWidget.item(row, column)
+                            if item is not None:
+                                rowdata.append(item.text())
+                            else:
+                                rowdata.append('')
+                        writer.writerow(rowdata)
+
+                    # Display changes to the corresponding UI elements
+                    self.itemQuantity.setText(newQuantity)
+                    QMessageBox.Information(self, 'Confirmation', "변경 사항이 저장 되었습니다!")
+
+            except:
+                # If file is not loaded, display message
+                warningMsg = QMessageBox()
+                warningMsg.setIcon(QMessageBox.Warning)
+                warningMsg.setWindowTitle('ERROR')
+                warningMsg.setText('파일을 저장하지 못하였습니다.')
+                warningMsg.exec_()
+
+    # Add new row with given item name and quantity and save its changes to the file
+    def AddNewItem(self):
+        print("adding")
+
+    # Delete selected row and save its changes to the file
+    def DeleteItem(self):
+        print("deleting")
+
 
 app = QtWidgets.QApplication(sys.argv)
 window = InvGUI()
