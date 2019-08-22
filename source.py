@@ -105,6 +105,7 @@ class InvGUI(UIClass, QtBaseClass):
         confirmSave = QMessageBox.question(self, 'Confirmation', "변경 사항을 저장 하시겠습니다?",
                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
+        # If user clicks yes, apply changes and save file
         if confirmSave == QMessageBox.Yes:
             oldQty = int(self.tableWidget.item(InvGUI.row, 1).text())
             print("Old Quantity: ", oldQty)
@@ -112,33 +113,8 @@ class InvGUI(UIClass, QtBaseClass):
             tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
             newQuantity = QTableWidgetItem(str(tmp))
             print("New Quantity: ", tmp)
-
-            try:  ### TEST HERE
-                # Save to the same csv file by opening it again
-                with open(InvGUI.filePath[0], newline='', mode='w') as csvFile:
-                    self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
-                    writer = csv.writer(csvFile)
-                    for row in range(self.tableWidget.rowCount()):
-                        rowdata = []
-                        for column in range(self.tableWidget.columnCount()):
-                            item = self.tableWidget.item(row, column)
-                            if item is not None:
-                                rowdata.append(item.text())
-                            else:
-                                rowdata.append('')
-                        writer.writerow(rowdata)
-
-                    # Display changes to the corresponding UI elements
-                    self.itemQuantity.setText(newQuantity)
-                    QMessageBox.Information(self, 'Confirmation', "변경 사항이 저장 되었습니다!")
-
-            except:
-                # If file is not loaded, display message
-                warningMsg = QMessageBox()
-                warningMsg.setIcon(QMessageBox.Warning)
-                warningMsg.setWindowTitle('ERROR')
-                warningMsg.setText('파일을 저장하지 못하였습니다.')
-                warningMsg.exec_()
+            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+            InvGUI.SaveFile(self)  # call function to save file
 
     # Add new row with given item name and quantity and save its changes to the file
     def AddNewItem(self):
@@ -147,6 +123,44 @@ class InvGUI(UIClass, QtBaseClass):
     # Delete selected row and save its changes to the file
     def DeleteItem(self):
         print("deleting")
+
+    # Save function that saves to the opened csv file of what current table widget contains
+    def SaveFile(self):
+        try:
+            # Save to the same csv file by opening it again
+            with open(InvGUI.filePath[0], newline='', mode='w') as csvFile:
+                writer = csv.writer(csvFile)
+                for row in range(self.tableWidget.rowCount()):
+                    rowdata = []
+                    for column in range(self.tableWidget.columnCount()):
+                        item = self.tableWidget.item(row, column)
+                        if item is not None:
+                            rowdata.append(item.text())
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+                # Display changes to the corresponding UI elements
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+
+                # Set spin boxes to 0
+                self.incomingQuantity.setValue(0)
+                self.outgoingQuantity.setValue(0)
+
+                # Inform user data was successfully saved
+                confirmMsg = QMessageBox()
+                confirmMsg.setIcon(QMessageBox.Information)
+                confirmMsg.setWindowTitle('Confirmation')
+                confirmMsg.setText("저장 되었습니다!")
+                confirmMsg.exec_()
+
+        except:
+            # If file is not loaded, display message
+            warningMsg = QMessageBox()
+            warningMsg.setIcon(QMessageBox.Warning)
+            warningMsg.setWindowTitle('ERROR')
+            warningMsg.setText('오류가 발생하였습니다.')
+            warningMsg.exec_()
 
 
 app = QtWidgets.QApplication(sys.argv)
