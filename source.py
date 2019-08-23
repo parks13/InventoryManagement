@@ -36,6 +36,9 @@ class InvGUI(UIClass, QtBaseClass):
         # Connect save button to save new quantity of the item
         self.setNewQuantityButton.clicked.connect(self.ChangeQuantity)
 
+        # Connect add item button to function that adds new item and saves it
+        self.addItemButton.clicked.connect(self.AddNewItem)
+
     # Opens a single .csv file
     def OpenFile(self):
         options = QFileDialog.Options()
@@ -113,12 +116,30 @@ class InvGUI(UIClass, QtBaseClass):
             tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
             newQuantity = QTableWidgetItem(str(tmp))
             print("New Quantity: ", tmp)
-            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
-            InvGUI.SaveFile(self)  # call function to save file
+            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)  # change table widget content
+
+            # Call function to save file of what table widget has now
+            InvGUI.SaveFile(self)
 
     # Add new row with given item name and quantity and save its changes to the file
     def AddNewItem(self):
-        print("adding")
+        # Prompt user with confirmation box before saving
+        confirmAdd = QMessageBox.question(self, 'Confirmation', "추가 하시겠습니다?",
+                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        # If user clicks yes, add new item and save file
+        if confirmAdd == QMessageBox.Yes:
+            newItem = QTableWidgetItem(self.newItemName.text())
+            newQuantity = QTableWidgetItem(self.newItemQuantity.text())
+
+            # Adding new row with its name and quantity
+            InvGUI.row = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(InvGUI.row)
+            self.tableWidget.setItem(InvGUI.row, 0, newItem)
+            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+
+            # Call function to save file of what table widget has now
+            InvGUI.SaveFile(self)
 
     # Delete selected row and save its changes to the file
     def DeleteItem(self):
@@ -143,9 +164,11 @@ class InvGUI(UIClass, QtBaseClass):
                 # Display changes to the corresponding UI elements
                 self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
 
-                # Set spin boxes to 0
+                # Reset all user enter field
                 self.incomingQuantity.setValue(0)
                 self.outgoingQuantity.setValue(0)
+                self.newItemQuantity.setValue(0)
+                self.newItemName.setText("")
 
                 # Inform user data was successfully saved
                 confirmMsg = QMessageBox()
