@@ -12,7 +12,7 @@ UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
 class InvGUI(UIClass, QtBaseClass):
     # default class variables
     filePath = ""
-    row = 0
+    row = -1
 
     # Constructs the GUI
     def __init__(self):
@@ -21,7 +21,7 @@ class InvGUI(UIClass, QtBaseClass):
         self.setupUi(self)
         self.setWindowTitle('Inventory Management Program')  # set the title of the program window
         self.setWindowFlag(QtCore.Qt.WindowMinMaxButtonsHint, False)  # disable windows maximize button
-        self.setFixedSize(752, 401)  # fix the windows size
+        self.setFixedSize(752, 401)  # fixed windows size to avoid ugly resizing
 
         # Show open file page and let the user open csv file and proceed to next page
         self.stackedWidget.setCurrentIndex(0)
@@ -38,6 +38,9 @@ class InvGUI(UIClass, QtBaseClass):
 
         # Connect add item button to function that adds new item and saves it
         self.addItemButton.clicked.connect(self.AddNewItem)
+
+        # Connect delete item button to function that deletes selected row
+        self.deleteItemButton.clicked.connect(self.DeleteItem)
 
     # Opens a single .csv file
     def OpenFile(self):
@@ -91,6 +94,7 @@ class InvGUI(UIClass, QtBaseClass):
         if items:
             for item in items:
                 InvGUI.row = item.row()
+
                 # When found, display the results
                 self.itemName.setText(self.tableWidget.item(InvGUI.row, 0).text())
                 self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
@@ -121,29 +125,70 @@ class InvGUI(UIClass, QtBaseClass):
             # Call function to save file of what table widget has now
             InvGUI.SaveFile(self)
 
+            # Display changes to the corresponding UI elements
+            self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+
     # Add new row with given item name and quantity and save its changes to the file
     def AddNewItem(self):
-        # Prompt user with confirmation box before saving
+        # Prompt user with confirmation box before adding
         confirmAdd = QMessageBox.question(self, 'Confirmation', "추가 하시겠습니다?",
                                           QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         # If user clicks yes, add new item and save file
         if confirmAdd == QMessageBox.Yes:
-            newItem = QTableWidgetItem(self.newItemName.text())
-            newQuantity = QTableWidgetItem(self.newItemQuantity.text())
 
-            # Adding new row with its name and quantity
-            InvGUI.row = self.tableWidget.rowCount()
-            self.tableWidget.insertRow(InvGUI.row)
-            self.tableWidget.setItem(InvGUI.row, 0, newItem)
-            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+            # Make sure item name is not empty string
+            if self.newItemName.text() == "":
+                warningMsg = QMessageBox()
+                warningMsg.setIcon(QMessageBox.Warning)
+                warningMsg.setWindowTitle('ERROR')
+                warningMsg.setText('품목 이름을 입력해 주세요.')
+                warningMsg.exec_()
 
-            # Call function to save file of what table widget has now
-            InvGUI.SaveFile(self)
+            else:
+                newItem = QTableWidgetItem(self.newItemName.text())
+                newQuantity = QTableWidgetItem(self.newItemQuantity.text())
+
+                # Adding new row with its name and quantity
+                InvGUI.row = self.tableWidget.rowCount()
+                self.tableWidget.insertRow(InvGUI.row)
+                self.tableWidget.setItem(InvGUI.row, 0, newItem)
+                self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+
+                # Call function to save file of what table widget has now
+                InvGUI.SaveFile(self)
+
+                # Display changes to the corresponding UI elements
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
 
     # Delete selected row and save its changes to the file
     def DeleteItem(self):
-        print("deleting")
+        # Prompt user with confirmation box before deleting
+        confirmDelete = QMessageBox.question(self, 'Confirmation', "선택 항목을 완전히 삭제 하시겠습니다?",
+                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        # If user clicks yes, delete selected row and save file
+        if confirmDelete == QMessageBox.Yes:
+            # Make sure a row is selected before proceeding
+            if InvGUI.row == -1:
+                warningMsg = QMessageBox()
+                warningMsg.setIcon(QMessageBox.Warning)
+                warningMsg.setWindowTitle('ERROR')
+                warningMsg.setText('삭제 할 항목을 선택해 주세요.')
+                warningMsg.exec_()
+
+            else:
+                self.tableWidget.removeRow(InvGUI.row)  # delete row from table widget
+
+                # Call function to save file of what table widget has now
+                InvGUI.SaveFile(self)
+
+                # Set row to -1
+                InvGUI.row = -1
+
+                # Display changes to the corresponding UI elements
+                self.itemQuantity.setText("-")
+                self.itemName.setText("-")
 
     # Save function that saves to the opened csv file of what current table widget contains
     def SaveFile(self):
@@ -160,9 +205,6 @@ class InvGUI(UIClass, QtBaseClass):
                         else:
                             rowdata.append('')
                     writer.writerow(rowdata)
-
-                # Display changes to the corresponding UI elements
-                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
 
                 # Reset all user enter field
                 self.incomingQuantity.setValue(0)
@@ -182,7 +224,7 @@ class InvGUI(UIClass, QtBaseClass):
             warningMsg = QMessageBox()
             warningMsg.setIcon(QMessageBox.Warning)
             warningMsg.setWindowTitle('ERROR')
-            warningMsg.setText('오류가 발생하였습니다.')
+            warningMsg.setText('저장 시 오류가 발생하였습니다.')
             warningMsg.exec_()
 
 
