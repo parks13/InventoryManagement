@@ -1,9 +1,6 @@
 import sys, csv
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QTextEdit, \
-    QVBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QTextCharFormat, QTextFormat, QTextObjectInterface
-from PyQt5.QtCore import QFile, QIODevice, QObject, QSize
+from PyQt5 import QtCore, uic, QtWidgets
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QTableWidgetItem
 
 # Load the UI file
 UIClass, QtBaseClass = uic.loadUiType("InvScreen.ui")
@@ -54,7 +51,7 @@ class InvGUI(UIClass, QtBaseClass):
                 # parse the csv file
                 with open(InvGUI.filePath[0], newline='') as csvFile:
                     self.tableWidget.setRowCount(0)
-                    self.tableWidget.setColumnCount(2)
+                    self.tableWidget.setColumnCount(3)
                     file = csv.reader(csvFile, delimiter=',', quotechar='|')
 
                     for rowData in file:
@@ -78,26 +75,29 @@ class InvGUI(UIClass, QtBaseClass):
 
     # Displays data of the clicked row
     def ClickedCell(self, row, col):
-        self.itemName.setText(self.tableWidget.item(row, 0).text())
-        self.itemQuantity.setText(self.tableWidget.item(row, 1).text())
+        self.itemCode.setText(self.tableWidget.item(row, 0).text())
+        self.itemName.setText(self.tableWidget.item(row, 1).text())
+        self.itemQuantity.setText(self.tableWidget.item(row, 2).text())
         InvGUI.row = row
         print("Row selected: ", InvGUI.row + 1)
         print("Column selected: ", col + 1)
 
     # Search and display corresponding content
     def Search(self):
-        itemName = self.searchObj.text()
-        print("Searching: ", itemName)
+        toSearch = self.searchObj.text()
+        print("Searching: ", toSearch)
 
         # Searching for the item, with case insensitive format
-        items = self.tableWidget.findItems(itemName, QtCore.Qt.MatchFixedString)
+        # NOTE: instead of searching specific row, it searches the whole table widget
+        items = self.tableWidget.findItems(toSearch, QtCore.Qt.MatchFixedString)
         if items:
             for item in items:
                 InvGUI.row = item.row()
 
                 # When found, display the results
-                self.itemName.setText(self.tableWidget.item(InvGUI.row, 0).text())
-                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                self.itemCode.setText(self.tableWidget.item(InvGUI.row, 0).text())
+                self.itemName.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 2).text())
                 self.tableWidget.selectRow(InvGUI.row)  # highlight corresponding row
                 print("Row selected: ", InvGUI.row + 1)
 
@@ -114,19 +114,27 @@ class InvGUI(UIClass, QtBaseClass):
 
         # If user clicks yes, apply changes and save file
         if confirmSave == QMessageBox.Yes:
-            oldQty = int(self.tableWidget.item(InvGUI.row, 1).text())
-            print("Old Quantity: ", oldQty)
+            # Make sure a row is selected before proceeding
+            if InvGUI.row == -1:
+                warningMsg = QMessageBox()
+                warningMsg.setIcon(QMessageBox.Warning)
+                warningMsg.setWindowTitle('ERROR')
+                warningMsg.setText('수정 할 항목을 선택해 주세요.')
+                warningMsg.exec_()
+            else:
+                oldQty = int(self.tableWidget.item(InvGUI.row, 2).text())
+                print("Old Quantity: ", oldQty)
 
-            tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
-            newQuantity = QTableWidgetItem(str(tmp))
-            print("New Quantity: ", tmp)
-            self.tableWidget.setItem(InvGUI.row, 1, newQuantity)  # change table widget content
+                tmp = oldQty + int(self.incomingQuantity.text()) - int(self.outgoingQuantity.text())
+                newQuantity = QTableWidgetItem(str(tmp))
+                print("New Quantity: ", tmp)
+                self.tableWidget.setItem(InvGUI.row, 2, newQuantity)  # change table widget content
 
-            # Call function to save file of what table widget has now
-            InvGUI.SaveFile(self)
+                # Call function to save file of what table widget has now
+                InvGUI.SaveFile(self)
 
-            # Display changes to the corresponding UI elements
-            self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                # Display changes to the corresponding UI elements
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 2).text())
 
     # Add new row with given item name and quantity and save its changes to the file
     def AddNewItem(self):
@@ -138,34 +146,38 @@ class InvGUI(UIClass, QtBaseClass):
         if confirmAdd == QMessageBox.Yes:
 
             # Make sure item name is not empty string
-            if self.newItemName.text() == "":
+            if self.newItemName.text() == "" or self.newItemCode.text() == "":
                 warningMsg = QMessageBox()
                 warningMsg.setIcon(QMessageBox.Warning)
                 warningMsg.setWindowTitle('ERROR')
-                warningMsg.setText('품목 이름을 입력해 주세요.')
+                warningMsg.setText('품목 ID 및 이름을 입력해 주세요.')
                 warningMsg.exec_()
 
             else:
+                newCode = QTableWidgetItem(self.newItemCode.text())
                 newItem = QTableWidgetItem(self.newItemName.text())
                 newQuantity = QTableWidgetItem(self.newItemQuantity.text())
 
                 # Adding new row with its name and quantity
                 InvGUI.row = self.tableWidget.rowCount()
                 self.tableWidget.insertRow(InvGUI.row)
-                self.tableWidget.setItem(InvGUI.row, 0, newItem)
-                self.tableWidget.setItem(InvGUI.row, 1, newQuantity)
+                self.tableWidget.setItem(InvGUI.row, 0, newCode)
+                self.tableWidget.setItem(InvGUI.row, 1, newItem)
+                self.tableWidget.setItem(InvGUI.row, 2, newQuantity)
 
                 # Call function to save file of what table widget has now
                 InvGUI.SaveFile(self)
 
                 # Display changes to the corresponding UI elements
-                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                self.itemCode.setText(self.tableWidget.item(InvGUI.row, 0).text())
+                self.itemName.setText(self.tableWidget.item(InvGUI.row, 1).text())
+                self.itemQuantity.setText(self.tableWidget.item(InvGUI.row, 2).text())
 
     # Delete selected row and save its changes to the file
     def DeleteItem(self):
         # Prompt user with confirmation box before deleting
         confirmDelete = QMessageBox.question(self, 'Confirmation', "선택 항목을 완전히 삭제 하시겠습니다?",
-                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         # If user clicks yes, delete selected row and save file
         if confirmDelete == QMessageBox.Yes:
@@ -187,6 +199,7 @@ class InvGUI(UIClass, QtBaseClass):
                 InvGUI.row = -1
 
                 # Display changes to the corresponding UI elements
+                self.itemCode.setText("-")
                 self.itemQuantity.setText("-")
                 self.itemName.setText("-")
 
@@ -209,7 +222,8 @@ class InvGUI(UIClass, QtBaseClass):
                 # Reset all user enter field
                 self.incomingQuantity.setValue(0)
                 self.outgoingQuantity.setValue(0)
-                self.newItemQuantity.setValue(0)
+                self.newItemQuantity.setValue(1)
+                self.newItemCode.setText("")
                 self.newItemName.setText("")
 
                 # Inform user data was successfully saved
@@ -219,12 +233,13 @@ class InvGUI(UIClass, QtBaseClass):
                 confirmMsg.setText("저장 되었습니다!")
                 confirmMsg.exec_()
 
+
         except:
             # If file is not loaded, display message
             warningMsg = QMessageBox()
             warningMsg.setIcon(QMessageBox.Warning)
             warningMsg.setWindowTitle('ERROR')
-            warningMsg.setText('저장 시 오류가 발생하였습니다.')
+            warningMsg.setText('저장 오류가 발생하였습니다.')
             warningMsg.exec_()
 
 
