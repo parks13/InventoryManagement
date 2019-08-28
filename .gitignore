@@ -65,3 +65,5 @@ build/source/Analysis-00.toc
 .idea/misc.xml
 .idea/InventoryManagement.iml
 .idea/inspectionProfiles/profiles_settings.xml
+dist/logo.png
+dist/InvScreen.ui
